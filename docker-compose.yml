@@ -1,0 +1,24 @@
+services:
+  hrm-api:
+    image: fonteyn-hrm-api:local
+    build:
+      context: .
+      dockerfile: Dockerfile.Api
+    container_name: fonteyn-hrm-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__HrDatabaseConnectionString: ${HR_DATABASE_CONNECTION_STRING}
+
+  hrm-blazorui:
+    image: fonteyn-hrm-blazorui:local
+    build:
+      context: .
+      dockerfile: Dockerfile.BlazorUI
+    container_name: fonteyn-hrm-blazorui
+    ports:
+      - "8081:80"
+    depends_on:
+      - hrm-api

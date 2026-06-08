@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+.git/
+.github/
+.vscode/
+.idea/
+*.user
+*.suo
+*.cache
+*.log
+Dockerfile*
+docker-compose*.yml
+README.md
+# Local secrets
+.env

@@ -1,0 +1,26 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy all project files
+COPY . .
+
+# Restore dependencies for the API project
+RUN dotnet restore "HR.LeaveManagement.Api/HR.LeaveManagement.Api.csproj"
+
+# Publish the API project
+RUN dotnet publish "HR.LeaveManagement.Api/HR.LeaveManagement.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+
+# Azure Container Apps uses container ports, so the API listens on port 8080
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+
+# Copy published files from the build stage
+COPY --from=build /app/publish .
+
+# Start the API
+ENTRYPOINT ["dotnet", "HR.LeaveManagement.Api.dll"]
