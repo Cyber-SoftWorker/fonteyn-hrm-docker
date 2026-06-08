@@ -17,7 +17,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddTransient<JwtAuthorizationMessageHandler>();
-builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("http://localhost:8080"))
+builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("https://ca-fonteyn-hrm-api.redmoss-1e89d648.francecentral.azurecontainerapps.io/"))
     .AddHttpMessageHandler<JwtAuthorizationMessageHandler>(); ;
 
 builder.Services.AddBlazoredToast();
