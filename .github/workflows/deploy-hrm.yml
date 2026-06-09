@@ -1,0 +1,82 @@
+name: Deploy HRM to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - docker-implementation
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_NAME: fonteynhrmacr
+  ACR_LOGIN_SERVER: fonteynhrmacr-g9ejhdg2dua8d4f0.azurecr.io
+  RESOURCE_GROUP: rg-fonteyn-app
+  API_CONTAINER_APP: ca-fonteyn-hrm-api
+  BLAZOR_CONTAINER_APP: ca-fonteyn-hrm-blazorui
+  API_IMAGE_NAME: hrm-api
+  BLAZOR_IMAGE_NAME: hrm-blazorui
+
+jobs:
+  build-and-deploy:
+    name: Build, push and deploy HRM containers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Build API Docker image
+        run: |
+          docker build \
+            -f Dockerfile.Api \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }} \
+            .
+
+      - name: Build Blazor UI Docker image
+        run: |
+          docker build \
+            -f Dockerfile.BlazorUI \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.BLAZOR_IMAGE_NAME }}:${{ github.sha }} \
+            .
+
+      - name: Push API Docker image to ACR
+        run: |
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Push Blazor UI Docker image to ACR
+        run: |
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.BLAZOR_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy API to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.API_CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy Blazor UI to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.BLAZOR_CONTAINER_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.BLAZOR_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Show deployed image tags
+        run: |
+          echo "API image deployed:"
+          echo "${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}"
+          echo "Blazor UI image deployed:"
+          echo "${{ env.ACR_LOGIN_SERVER }}/${{ env.BLAZOR_IMAGE_NAME }}:${{ github.sha }}"
