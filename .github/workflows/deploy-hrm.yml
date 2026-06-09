@@ -15,9 +15,9 @@ env:
   ACR_LOGIN_SERVER: fonteynhrmacr-g9ejhdg2dua8d4f0.azurecr.io
   RESOURCE_GROUP: rg-fonteyn-app
   API_CONTAINER_APP: ca-fonteyn-hrm-api
-  BLAZOR_CONTAINER_APP: ca-fonteyn-hrm-blazorui
-  API_IMAGE_NAME: hrm-api
-  BLAZOR_IMAGE_NAME: hrm-blazorui
+  BLAZOR_CONTAINER_APP: ca-fonteyn-hrm-web
+  API_IMAGE_NAME: fonteyn-hrm-api
+  BLAZOR_IMAGE_NAME: fonteyn-hrm-blazorui
 
 jobs:
   build-and-deploy:
